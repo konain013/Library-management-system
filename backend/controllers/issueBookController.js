@@ -3,6 +3,7 @@ const Issue = require("../models/issueBook");
 
 // Borrow Book 
 const borrowBook = async (req, res) => {
+   
   try {
     const { bookId, userId, dueDate } = req.body;
 
@@ -97,25 +98,6 @@ const returnBook = async (req, res) => {
   }
 };
 
-// Get My Borrowed Books 
-const getMyBorrowedBooks = async (req, res) => {
-  try {
-    const { userId } = req.body;
-
-    const issues = await Issue.find({ user: userId });
-
-    return res.status(200).json({
-      success: true,
-      count: issues.length,
-      data: issues,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
 // Get All Issued Books 
 const getAllIssuedBooks = async (req, res) => {
@@ -138,6 +120,5 @@ const getAllIssuedBooks = async (req, res) => {
 module.exports = {
   borrowBook,
   returnBook,
-  getMyBorrowedBooks,
   getAllIssuedBooks,
 };

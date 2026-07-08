@@ -16,10 +16,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/books", bookRoutes);
-app.use("/api/issues", issueRoutes);
+app.use("/api/issuebook", issueRoutes);
 
 const PORT = process.env.PORT || 3000;
 
