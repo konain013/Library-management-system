@@ -1,36 +1,43 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
-const authmiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({
-      success: false,
-      message: 'Access denied, no token provided',
-    });
-  }
-
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid authorization header format',
-    });
-  }
-
-  const token = parts[1];
-
+const authMiddleware = (req, res, next) => {
   try {
+    // 1. Get Authorization header
+    const authHeader = req.headers.authorization;
+
+    // 2. Check if header exists
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: "Authorization header is missing",
+      });
+    }
+
+    // 3. Check Bearer format
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authorization format",
+      });
+    }
+
+    // 4. Extract token
+    const token = authHeader.split(" ")[1];
+
+    // 5. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 6. Store decoded payload
     req.user = decoded;
+
+    // 7. Continue
     next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid or expired token',
+      message: "Invalid or expired token",
     });
   }
 };
 
-module.exports = authmiddleware;
-
+module.exports = authMiddleware;

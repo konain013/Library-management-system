@@ -1,4 +1,7 @@
 const express = require("express");
+const authMiddleware = require("../middleware/authMiddleware");
+const authorize = require("../middleware/authorize");
+
 const {
   addBook,
   getAllBooks,
@@ -7,10 +10,12 @@ const {
 
 const router = express.Router();
 
-router.post("/add", addBook);
+// Public
+router.get("/", getAllBooks);
 
-router.get("/allbooks", getAllBooks);
+// Admin only
+router.post("/add", authMiddleware, authorize("admin"), addBook);
 
-router.delete("/:id", deleteBook);
+router.delete("/:id", authMiddleware, authorize("admin"), deleteBook);
 
 module.exports = router;

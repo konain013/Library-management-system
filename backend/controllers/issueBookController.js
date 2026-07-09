@@ -32,7 +32,7 @@ const borrowBook = async (req, res) => {
 
     const issue = await Issue.create({
       book: bookId,
-      user: userId,
+      user: userId ,
       dueDate,
     });
 
@@ -62,7 +62,7 @@ const returnBook = async (req, res) => {
     if (!issue) {
       return res.status(404).json({
         success: false,
-        message: "Issue record not found.",
+        message: " book Issue record not found.",
       });
     }
 
