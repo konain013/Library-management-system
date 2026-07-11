@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { registerSchema, loginSchema } = require("../validators/authValidator");
 
-const registerUser = async (req, res) => {
+const registerUser = async (req, res,next) => {
   try {
     //1.Validation(zod)
     // safeParse() — req.body ko Zod schema ke rules se validate karta hai
@@ -61,8 +61,7 @@ const registerUser = async (req, res) => {
       message: "user register succesfully",
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success:false, message: "Internal Server Error" });
+    next(error)
   }
 };
 
@@ -70,7 +69,7 @@ const registerUser = async (req, res) => {
 //  LOGIN
 // ****************
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res,next) => {
   try {
     const result = loginSchema.safeParse(req.body);
 
@@ -130,11 +129,7 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server error",
-    });
+    next(error)
   }
 };
 
@@ -144,7 +139,7 @@ const loginUser = async (req, res) => {
 
 //  ****************
 
-const getUsers = async (req, res) => {
+const getUsers = async (req, res , next) => {
   try {
     const users = await User.find().select("-password");
     return res.status(200).json({
@@ -154,11 +149,7 @@ const getUsers = async (req, res) => {
       users: users,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: "internal Server error",
-    });
+    next(error)
   }
 };
 
@@ -168,7 +159,7 @@ const getUsers = async (req, res) => {
 
 // ********************************
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   const { id } = req.params;
   try {
     const user = await User.findById(id).select("-password");
@@ -184,16 +175,12 @@ const getUserById = async (req, res) => {
       user: user,
     });
   } catch (error) {
-    console.error(error);
     if (error.name === "CastError") {
       return res
         .status(400)
         .json({ success: false, message: "Invalid user ID format" });
     }
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    });
+    next(error)
   }
 };
 
@@ -203,7 +190,7 @@ const getUserById = async (req, res) => {
 
 // ***********************
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
 
@@ -215,16 +202,12 @@ const deleteUser = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "User deleted" });
   } catch (error) {
-    console.error(error);
     if (error.name === "CastError") {
       return res
         .status(400)
         .json({ success: false, message: "Invalid user ID format" });
     }
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    });
+    next(error)
   }
 };
 

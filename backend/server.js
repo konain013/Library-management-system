@@ -6,7 +6,8 @@ const connectDB = require("./config/db");
 
 const userRoutes = require("./routes/userRoutes");
 const bookRoutes = require("./routes/bookRoutes");
-const issueRoutes = require("./routes/issueRoutes")
+const issueRoutes = require("./routes/issueRoutes");
+const errorhandler = require("./middleware/errorhandler");
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/issuebook", issueRoutes);
+
+app.use(errorhandler)
 
 const PORT = process.env.PORT || 3000;
 
