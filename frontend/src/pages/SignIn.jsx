@@ -1,98 +1,77 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import AuthLayout from "../components/AuthLayout";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import { loginUser } from "../services/authService";
+// src/pages/SignIn.jsx
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { login } from '../services/authService';
 
-function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(""); // Success message ke liye state
+const SignIn = () => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login: authLogin } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
+    setError('');
 
     try {
-      const data = await loginUser({ email, password });
-      console.log("Login Success:", data);
-      
-      // Screen par success message dikhane ke liye
-      setSuccess("Login Successful");
-      
-      // Form fields ko khali karne ke liye (Optional)
-      setEmail("");
-      setPassword("");
+      const data = await login(formData);
+      authLogin(data.user, data.token);
     } catch (err) {
-      setError(err.message || "Invalid email or password.");
+      setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthLayout
-      title="Welcome Back"
-      subtitle="Sign in to continue to your account."
-    >
-      <form onSubmit={handleSubmit}>
-        
-        {/* Error Alert */}
-        {error && <div className="alert alert-danger p-2 small">{error}</div>}
-
-        {/* Success Alert */}
-        {success && <div className="alert alert-success p-2 small">{success}</div>}
-
-        <Input
-          label="Email Address"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <div className="d-flex justify-content-end mb-3">
-          <Link
-            to="/forgot-password"
-            className="text-decoration-none small"
-          >
-            Forgot Password?
-          </Link>
+    <div className="min-h-screen flex items-center justify-center bg-[#0F172A]">
+      <div className="bg-[#1E2937] p-10 rounded-3xl w-full max-w-md shadow-2xl">
+        <div className="text-center mb-10">
+          <div className="text-5xl mb-4">📚</div>
+          <h2 className="text-3xl font-bold">Sign In</h2>
+          <p className="text-gray-400 mt-2">Access your library account</p>
         </div>
 
-        <Button 
-          type="submit" 
-          text={loading ? "Signing In..." : "Sign In"} 
-          disabled={loading} 
-        />
+        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
 
-        <p className="text-center mt-4 mb-0">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-decoration-none fw-semibold"
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="w-full bg-[#334155] border border-gray-600 rounded-2xl px-5 py-4 focus:outline-none focus:border-[#22C55E]"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
+          />
+          
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full bg-[#334155] border border-gray-600 rounded-2xl px-5 py-4 focus:outline-none focus:border-[#22C55E]"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-4 rounded-2xl transition-all duration-200 disabled:opacity-50"
           >
-            Sign Up
-          </Link>
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+
+        <p className="text-center mt-6 text-gray-400">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-[#22C55E] hover:underline font-medium">Sign Up</Link>
         </p>
-      </form>
-    </AuthLayout>
+      </div>
+    </div>
   );
-}
+};
 
 export default SignIn;
