@@ -17,6 +17,6 @@ router.post("/bookissue", authMiddleware, borrowBook);
 router.put("/return/:id", authMiddleware, returnBook);
 
 // Only Admin can view all issues
-router.get("/", authMiddleware, authorize("admin"), getAllIssuedBooks);
+router.get("/", authMiddleware, authorize("admin","user"), getAllIssuedBooks);
 
 module.exports = router;

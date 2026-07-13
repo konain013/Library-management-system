@@ -45,10 +45,7 @@ const borrowBook = async (req, res) => {
       data: issue,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 
@@ -91,16 +88,13 @@ const returnBook = async (req, res) => {
       data: issue,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 
 
 // Get All Issued Books 
-const getAllIssuedBooks = async (req, res) => {
+const getAllIssuedBooks = async (req, res,next) => {
   try {
     const issues = await Issue.find();
 
@@ -110,10 +104,7 @@ const getAllIssuedBooks = async (req, res) => {
       data: issues,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 

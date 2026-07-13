@@ -1,7 +1,7 @@
 const Book = require("../models/Book");
 
 // Add Book (Admin)
-const addBook = async (req, res) => {
+const addBook = async (req, res,next) => {
   try {
     let { title, author, isbn } = req.body;
     // console.log("body recieve",req.body)
@@ -64,15 +64,12 @@ const addBook = async (req, res) => {
       data: book,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 
 // Get All Books (User & Admin)
-const getAllBooks = async (req, res) => {
+const getAllBooks = async (req, res,next) => {
   try {
     const books = await Book.find();
 
@@ -82,15 +79,12 @@ const getAllBooks = async (req, res) => {
       data: books,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 
 // Delete Book (Admin)
-const deleteBook = async (req, res) => {
+const deleteBook = async (req, res,next) => {
   try {
     const book = await Book.findByIdAndDelete(req.params.id);
 
@@ -106,10 +100,7 @@ const deleteBook = async (req, res) => {
       message: "Book deleted successfully.",
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 

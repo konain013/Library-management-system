@@ -5,10 +5,13 @@ import toast, { Toaster } from 'react-hot-toast';
 const MyBooks = () => {
   const [issuedBooks, setIssuedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // 🔥 FIX #1: track WHICH book is returning, not a single global boolean.
-  // Isse sirf uss book ka button disable hoga, baaki sab active rahenge.
   const [returningId, setReturningId] = useState(null);
+
+  
+  const currentUserJson = localStorage.getItem('user'); 
+  const loggedInUser = currentUserJson ? JSON.parse(currentUserJson) : null;
+  const isAdmin = loggedInUser?.role === 'admin';
+  const currentUserId = String(loggedInUser?.id || loggedInUser?._id || "");
 
   const fetchMyBooks = async () => {
     try {
@@ -16,9 +19,6 @@ const MyBooks = () => {
       const data = await getMyIssuedBooks();
       console.log("📥 Full API Response Inside MyBooks Component:", data);
 
-      // 🔥 ROOT FIX: /api/issuebook endpoint saari records deta hai (returned +
-      // not-returned dono). Isliye frontend pe hi sirf "abhi tak wapas nahi
-      // hui" wali books ko rakho — jinka returnDate null/undefined hai.
       const onlyActive = (arr) => arr.filter(issue => !issue.returnDate);
 
       if (Array.isArray(data)) {
@@ -42,15 +42,12 @@ const MyBooks = () => {
     fetchMyBooks();
   }, []);
 
-  // ↩️ Book Return handler with LIVE REMOVAL FIX
   const handleReturn = async (issueId) => {
     if (!issueId) {
       toast.error("Invalid Record ID. Cannot return book.");
       return;
     }
 
-    // 🔥 FIX #2: normalize to string upfront, taake baad me comparison
-    // kabhi type-mismatch (ObjectId vs string vs number) ki wajah se fail na ho.
     const targetId = String(issueId);
 
     try {
@@ -63,10 +60,6 @@ const MyBooks = () => {
       toast.dismiss(loadingToast);
       toast.success("Book returned successfully!");
 
-      // 🔥 FIX #3: String() dono taraf lagao — ye asli bug tha.
-      // Pehle currentId aur issueId ka type kabhi kabhi mismatch ho sakta tha
-      // (e.g. ObjectId object vs plain string), isliye filter kabhi match hi
-      // nahi karta tha aur book list se remove nahi hoti thi.
       setIssuedBooks(prevBooks =>
         prevBooks.filter(issue => {
           const currentId = String(issue._id || issue.id || "");
@@ -76,13 +69,8 @@ const MyBooks = () => {
     } catch (err) {
       toast.dismiss();
       console.error("❌ Return Book Error:", err);
-
       const serverError = err.response?.data?.message || err.response?.data || "Failed to return book";
       toast.error(typeof serverError === 'string' ? serverError : "Request Error (400)");
-
-      // 🔥 FIX #4 (safety net): agar backend me return fail hua tha lekin
-      // hamara local state kisi wajah se already out-of-sync ho gaya ho,
-      // to server se dobara sync kar lo taake UI hamesha sach dikhaye.
       fetchMyBooks();
     } finally {
       setReturningId(null);
@@ -92,7 +80,7 @@ const MyBooks = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-white">
-        <div className="text-2xl text-gray-400 animate-pulse">Loading all issued records...</div>
+        <div className="text-2xl text-gray-400 animate-pulse">Loading issued records...</div>
       </div>
     );
   }
@@ -102,16 +90,21 @@ const MyBooks = () => {
       <Toaster position="top-center" reverseOrder={false} />
 
       <div className="max-w-5xl mx-auto">
+        {/* Dynamic Heading based on User Role */}
         <div className="mb-10">
           <h1 className="text-4xl font-bold flex items-center gap-3">
-            <span>📚</span> Issued Books Logs (Admin View)
+            <span>📚</span> {isAdmin ? "Issued Books Logs (Admin View)" : "My Borrowed Books"}
           </h1>
-          <p className="text-gray-400 mt-2">Showing all active rentals across the system</p>
+          <p className="text-gray-400 mt-2">
+            {isAdmin ? "Showing all active rentals across the system" : "List of books currently borrowed by you"}
+          </p>
         </div>
 
         {issuedBooks.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-gray-700 rounded-3xl bg-[#1E2937]/30 animate-in fade-in duration-350">
-            <p className="text-gray-400 text-xl font-medium mb-2">No issued books active in the system</p>
+            <p className="text-gray-400 text-xl font-medium mb-2">
+              {isAdmin ? "No issued books active in the system" : "You haven't borrowed any books yet"}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto bg-[#1E2937] rounded-3xl border border-gray-700/60 shadow-2xl">
@@ -131,6 +124,12 @@ const MyBooks = () => {
                   const currentUser = issue.UserID || issue.userId || issue.user;
                   const targetIssueId = String(issue._id || issue.id || "");
                   const isThisReturning = returningId === targetIssueId;
+
+                 
+                  const borrowerId = String(currentUser?._id || currentUser?.id || currentUser || "");
+
+                  
+                  const canReturn = isAdmin || (currentUserId === borrowerId);
 
                   const displayTitle = currentBook?.title || currentBook?.bookTitle || issue.bookTitle ||
                     (typeof currentBook === 'string' ? `ID: ${currentBook.substring(0, 8)}...` : "Raw Reference ID");
@@ -161,13 +160,17 @@ const MyBooks = () => {
                       </td>
 
                       <td className="p-5 text-center">
-                        <button
-                          onClick={() => handleReturn(targetIssueId)}
-                          disabled={isThisReturning}
-                          className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50"
-                        >
-                          {isThisReturning ? "Returning..." : "Return Book"}
-                        </button>
+                        {canReturn ? (
+                          <button
+                            onClick={() => handleReturn(targetIssueId)}
+                            disabled={isThisReturning}
+                            className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50"
+                          >
+                            {isThisReturning ? "Returning..." : "Return Book"}
+                          </button>
+                        ) : (
+                          <span className="text-gray-500 text-xs italic">Not Authorized</span>
+                        )}
                       </td>
                     </tr>
                   );
