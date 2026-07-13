@@ -230,4 +230,4 @@ npm run dev
 
 # 📄 License
 
-This project was built for educational and learning purposes.
+This project is built for educational and learning purposes.
