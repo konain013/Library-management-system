@@ -115,9 +115,9 @@ The application supports two user roles.
 Library-Management-System/
 │
 ├── frontend/
-    ├── src/
-    ├── public/ 
-    ├──package.json
+|    ├── src/
+|   ├── public/ 
+|   ├──package.json
 │
 ├── backend/
 │   ├── controllers/
@@ -206,13 +206,21 @@ npm run dev
 ---
 
 # 📷 Screenshots
+# Register
 ![Register Page](screenshots/Register.PNG)
+# Login
 ![login Page](screenshots/login.PNG)
+# Dashboard
 ![Dashboard Page](screenshots/Dashboard.PNG)
-![borrowBokk Page](screenshots/borrowBook.PNG)
+# Borrowedbook 
+![borrowBook Page](screenshots/borrowBook.PNG)
+# BorrowedBookHistory
 ![borrowBookHistory Page](screenshots/borrowedBookHistory.PNG)
+# ManageBook
 ![ManageBook Page](screenshots/ManageBook.PNG)
+# AddBook
 ![AddBook Page](screenshots/AddBook.PNG)
+# DeleteBook
 ![deleteBook Page](screenshots/deleteBook.PNG)
 
 
